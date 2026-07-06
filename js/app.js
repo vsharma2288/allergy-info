@@ -15,7 +15,8 @@ function normalize(str) {
   return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
-const excluded = new Set();
+const selected = new Set();
+let mode = 'hide'; // 'hide' = masquer les plats qui contiennent ; 'show' = afficher uniquement ceux qui contiennent
 let query = '';
 let DATA = [];
 
@@ -27,6 +28,19 @@ const clearBtn = document.getElementById('clearBtn');
 const searchEl = document.getElementById('search');
 const logoSlot = document.getElementById('logoSlot');
 const logoImg = document.getElementById('logo');
+const filterLabel = document.getElementById('filterLabel');
+const modeToggle = document.getElementById('modeToggle');
+
+modeToggle.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    mode = btn.dataset.mode;
+    modeToggle.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b === btn));
+    filterLabel.textContent = mode === 'hide'
+      ? 'Masquer les plats contenant :'
+      : 'Afficher uniquement les plats contenant :';
+    render();
+  });
+});
 
 logoImg.addEventListener('error', () => {
   logoImg.style.display = 'none';
@@ -44,8 +58,8 @@ function buildChips() {
   chipsEl.querySelectorAll('.chip').forEach(chip => {
     chip.addEventListener('click', () => {
       const a = chip.dataset.allergen;
-      if (excluded.has(a)) { excluded.delete(a); chip.classList.remove('active'); }
-      else { excluded.add(a); chip.classList.add('active'); }
+      if (selected.has(a)) { selected.delete(a); chip.classList.remove('active'); }
+      else { selected.add(a); chip.classList.add('active'); }
       render();
     });
   });
@@ -55,12 +69,16 @@ function render() {
   const q = normalize(query.trim());
   const filtered = DATA.filter(item => {
     if (q && !normalize(item.n).includes(q)) return false;
-    if (excluded.size > 0 && item.a.some(a => excluded.has(a))) return false;
+    if (selected.size > 0) {
+      const hasAny = item.a.some(a => selected.has(a));
+      if (mode === 'hide' && hasAny) return false;
+      if (mode === 'show' && !hasAny) return false;
+    }
     return true;
   });
 
   countEl.innerHTML = `<b>${filtered.length}</b> sur ${DATA.length} plats`;
-  clearBtn.classList.toggle('show', excluded.size > 0 || query.trim().length > 0);
+  clearBtn.classList.toggle('show', selected.size > 0 || query.trim().length > 0);
 
   if (filtered.length === 0) {
     listEl.innerHTML = '';
@@ -86,7 +104,7 @@ function render() {
 }
 
 clearBtn.addEventListener('click', () => {
-  excluded.clear();
+  selected.clear();
   query = '';
   searchEl.value = '';
   chipsEl.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
