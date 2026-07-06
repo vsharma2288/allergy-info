@@ -1,0 +1,9 @@
+Put your real logo file here as: assets/logo.png (or assets/logo.svg)
+
+- Recommended size: square or 3:1 wide, at least 160px tall
+- Transparent background (PNG) works best
+- If you use a different filename or a .svg, update the <img src="assets/logo.png"> line
+  in index.html to match
+
+Until a real file is added, the site shows a dashed placeholder box instead of a broken
+image icon — so it's safe to deploy as-is and swap the logo in later.

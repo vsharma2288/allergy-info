@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liste des allergènes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand-row">
+      <div class="logo-slot" id="logoSlot">
+        <img id="logo" src="assets/logo.png" alt="Logo">
+      </div>
+      <h1 class="brand-title">Liste des allergènes</h1>
+    </div>
+    <p class="subtitle">Recherchez un plat ou masquez les allergènes à éviter — le reste s'affiche en un instant.</p>
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="search" type="text" placeholder="Rechercher un plat (ex. brioche, tarte, crème)..." autocomplete="off">
+    </div>
+    <p class="filter-label">Masquer les plats contenant :</p>
+    <div class="chips" id="chips"></div>
+  </div>
+</header>
+
+<main>
+  <div class="status-row">
+    <span class="count" id="count"></span>
+    <button class="clear-btn" id="clearBtn">Réinitialiser les filtres</button>
+  </div>
+  <div class="list" id="list"></div>
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <div class="big">Aucun plat ne correspond</div>
+    <div>Essayez de retirer un filtre ou de raccourcir la recherche.</div>
+  </div>
+</main>
+
+<footer>
+  <p>Cette liste reflète les allergènes déclarés au moment de sa mise à jour. En cas d'allergie sévère, merci de confirmer directement avec l'équipe en caisse avant de commander.</p>
+</footer>
+
+<script src="js/app.js"></script>
+</body>
+</html>
