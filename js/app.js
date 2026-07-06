@@ -16,7 +16,6 @@ function normalize(str) {
 }
 
 const selected = new Set();
-let mode = 'hide'; // 'hide' = masquer les plats qui contiennent ; 'show' = afficher uniquement ceux qui contiennent
 let query = '';
 let DATA = [];
 
@@ -28,19 +27,6 @@ const clearBtn = document.getElementById('clearBtn');
 const searchEl = document.getElementById('search');
 const logoSlot = document.getElementById('logoSlot');
 const logoImg = document.getElementById('logo');
-const filterLabel = document.getElementById('filterLabel');
-const modeToggle = document.getElementById('modeToggle');
-
-modeToggle.querySelectorAll('.mode-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    mode = btn.dataset.mode;
-    modeToggle.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b === btn));
-    filterLabel.textContent = mode === 'hide'
-      ? 'Masquer les plats contenant :'
-      : 'Afficher uniquement les plats contenant :';
-    render();
-  });
-});
 
 logoImg.addEventListener('error', () => {
   logoImg.style.display = 'none';
@@ -69,11 +55,7 @@ function render() {
   const q = normalize(query.trim());
   const filtered = DATA.filter(item => {
     if (q && !normalize(item.n).includes(q)) return false;
-    if (selected.size > 0) {
-      const hasAny = item.a.some(a => selected.has(a));
-      if (mode === 'hide' && hasAny) return false;
-      if (mode === 'show' && !hasAny) return false;
-    }
+    if (selected.size > 0 && !item.a.some(a => selected.has(a))) return false;
     return true;
   });
 
