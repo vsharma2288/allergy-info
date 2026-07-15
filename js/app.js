@@ -9,7 +9,36 @@ const ALLERGEN_COLORS = {
   'Sulfites': 'var(--c-sulfites)',
 };
 
-const ALL_ALLERGENS = Object.keys(ALLERGEN_COLORS);
+// Colors handed out (in order, cycling if needed) to any allergen found in the
+// sheet that isn't in the fixed list above, so new allergens still look distinct.
+const FALLBACK_PALETTE = [
+  '#8e6b3f', '#4b7f8c', '#a3527a', '#5a7d3f',
+  '#c2703d', '#3f5f8c', '#7d3f6b', '#8c7a3f',
+];
+
+function getAllergenColor(a) {
+  if (ALLERGEN_COLORS[a]) return ALLERGEN_COLORS[a];
+  // Deterministically pick a fallback color based on the allergen's own name,
+  // so the same unknown allergen always gets the same color across reloads.
+  let hash = 0;
+  for (let i = 0; i < a.length; i++) hash = (hash * 31 + a.charCodeAt(i)) >>> 0;
+  return FALLBACK_PALETTE[hash % FALLBACK_PALETTE.length];
+}
+
+// Built dynamically from whatever allergens actually appear in the loaded data,
+// so a brand-new allergen added in the Google Sheet automatically gets a chip.
+let ALL_ALLERGENS = Object.keys(ALLERGEN_COLORS);
+
+function computeAllergensFromData(data) {
+  const found = new Set();
+  data.forEach(item => item.a.forEach(a => found.add(a)));
+
+  // Known allergens first (stable, familiar order), then any newly discovered
+  // ones appended alphabetically.
+  const known = Object.keys(ALLERGEN_COLORS).filter(a => found.has(a));
+  const unknown = [...found].filter(a => !ALLERGEN_COLORS[a]).sort((a, b) => a.localeCompare(b, 'fr'));
+  return [...known, ...unknown];
+}
 
 function normalize(str) {
   return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -36,7 +65,7 @@ logoImg.addEventListener('error', () => {
 function buildChips() {
   chipsEl.innerHTML = ALL_ALLERGENS.map(a => `
     <div class="chip" data-allergen="${a}">
-      <span class="dot" style="background:${ALLERGEN_COLORS[a]}"></span>
+      <span class="dot" style="background:${getAllergenColor(a)}"></span>
       <span>${a}</span>
     </div>
   `).join('');
@@ -71,7 +100,7 @@ function render() {
 
   listEl.innerHTML = filtered.map(item => {
     const tags = item.a.map(a => `
-      <span class="tag"><span class="dot" style="background:${ALLERGEN_COLORS[a] || '#999'}"></span>${a}</span>
+      <span class="tag"><span class="dot" style="background:${getAllergenColor(a)}"></span>${a}</span>
     `).join('');
     const rightSide = item.a.length === 0
       ? '<span class="safe-badge">✓ Aucun allergène listé</span>'
@@ -153,6 +182,7 @@ loadFromSheet()
   .then(data => {
     console.log(`Loaded ${data.length} dishes from Google Sheet.`);
     DATA = data;
+    ALL_ALLERGENS = computeAllergensFromData(DATA);
     buildChips();
     render();
   })
@@ -162,6 +192,7 @@ loadFromSheet()
       .then(data => {
         console.log(`Loaded ${data.length} dishes from local fallback data.json.`);
         DATA = data;
+        ALL_ALLERGENS = computeAllergensFromData(DATA);
         buildChips();
         render();
       })
