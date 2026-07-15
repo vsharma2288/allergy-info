@@ -101,7 +101,7 @@ searchEl.addEventListener('input', (e) => {
 // ---- Live data source: published Google Sheet (CSV) ----
 // In Google Sheets: File > Share > Publish to web > select the data tab >
 // format "Comma-separated values (.csv)" > Publish. Paste the resulting URL below.
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9JbOriT37IH4BrHNc2HuHoFOFWOYHppb0j0Ve8pDRGsbJk1H6of2VRqaTew6MNcuAKFj4ioQu7kxq/pub?output=csv';
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRp60hrrKhswT2kwzKuhYVOdDi8mBILeMzA-Qs_BujDXAJbl5AlS5iSH52xglt0720a9Y8ZXhXyoGTl/pub?output=csv';
 
 // Column names as they appear in row 1 of the sheet
 const COL_NAME = 'Désignation';
