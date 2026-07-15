@@ -101,7 +101,7 @@ searchEl.addEventListener('input', (e) => {
 // ---- Live data source: published Google Sheet (CSV) ----
 // In Google Sheets: File > Share > Publish to web > select the data tab >
 // format "Comma-separated values (.csv)" > Publish. Paste the resulting URL below.
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRp60hrrKhswT2kwzKuhYVOdDi8mBILeMzA-Qs_BujDXAJbl5AlS5iSH52xglt0720a9Y8ZXhXyoGTl/pub?output=csv';
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRp60hrrKhswT2kwzKuhYVOdDi8mBILeMzA-Qs_BujDXAJbl5AlS5iSH52xglt0720a9Y8ZXhXyoGTl/pub?gid=105391164&single=true&output=csv';
 
 // Column names as they appear in row 1 of the sheet
 const COL_NAME = 'Désignation';
@@ -151,6 +151,7 @@ function loadFromLocalFallback() {
 
 loadFromSheet()
   .then(data => {
+    console.log(`Loaded ${data.length} dishes from Google Sheet.`);
     DATA = data;
     buildChips();
     render();
@@ -159,6 +160,7 @@ loadFromSheet()
     console.warn('Live sheet fetch failed, falling back to local data.json:', err);
     loadFromLocalFallback()
       .then(data => {
+        console.log(`Loaded ${data.length} dishes from local fallback data.json.`);
         DATA = data;
         buildChips();
         render();
