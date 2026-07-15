@@ -98,13 +98,72 @@ searchEl.addEventListener('input', (e) => {
   render();
 });
 
-fetch('data/data.json')
-  .then(res => res.json())
+// ---- Live data source: published Google Sheet (CSV) ----
+// In Google Sheets: File > Share > Publish to web > select the data tab >
+// format "Comma-separated values (.csv)" > Publish. Paste the resulting URL below.
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9JbOriT37IH4BrHNc2HuHoFOFWOYHppb0j0Ve8pDRGsbJk1H6of2VRqaTew6MNcuAKFj4ioQu7kxq/pub?output=csv';
+
+// Column names as they appear in row 1 of the sheet
+const COL_NAME = 'Désignation';
+const COL_ALLERGENS = 'Allergènes';
+
+function parseAllergenCell(cell) {
+  if (!cell) return [];
+  const trimmed = cell.trim();
+  if (trimmed === '' || trimmed === '/') return [];
+  return trimmed
+    .split(',')
+    .map(a => a.trim())
+    .filter(a => a.length > 0 && a !== '/');
+}
+
+function loadFromSheet() {
+  // cache-bust so browsers/CDNs don't serve a stale copy of the CSV
+  const url = SHEET_CSV_URL + (SHEET_CSV_URL.includes('?') ? '&' : '?') + 'cachebust=' + Date.now();
+
+  return fetch(url)
+    .then(res => {
+      if (!res.ok) throw new Error('Network response was not ok');
+      return res.text();
+    })
+    .then(csvText => new Promise((resolve, reject) => {
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => resolve(results.data),
+        error: reject,
+      });
+    }))
+    .then(rows => {
+      return rows
+        .filter(row => row[COL_NAME] && row[COL_NAME].trim() !== '')
+        .map(row => ({
+          n: row[COL_NAME].trim(),
+          a: parseAllergenCell(row[COL_ALLERGENS]),
+        }));
+    });
+}
+
+// Fallback to the last known-good local copy if the live sheet can't be reached
+function loadFromLocalFallback() {
+  return fetch('data/data.json').then(res => res.json());
+}
+
+loadFromSheet()
   .then(data => {
     DATA = data;
     buildChips();
     render();
   })
-  .catch(() => {
-    listEl.innerHTML = '<div class="empty-state"><div class="big">Impossible de charger les données</div><div>Vérifiez que data/data.json est bien présent, et que le site est servi via http(s) (pas ouvert en double-clic).</div></div>';
+  .catch((err) => {
+    console.warn('Live sheet fetch failed, falling back to local data.json:', err);
+    loadFromLocalFallback()
+      .then(data => {
+        DATA = data;
+        buildChips();
+        render();
+      })
+      .catch(() => {
+        listEl.innerHTML = '<div class="empty-state"><div class="big">Impossible de charger les données</div><div>Vérifiez la connexion et que le lien Google Sheet est bien publié.</div></div>';
+      });
   });
