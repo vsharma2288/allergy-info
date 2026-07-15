@@ -55,7 +55,7 @@ function render() {
   const q = normalize(query.trim());
   const filtered = DATA.filter(item => {
     if (q && !normalize(item.n).includes(q)) return false;
-    if (selected.size > 0 && !item.a.some(a => selected.has(a))) return false;
+    if (selected.size > 0 && item.a.some(a => selected.has(a))) return false;
     return true;
   });
 
